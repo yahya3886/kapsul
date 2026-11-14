@@ -17,6 +17,7 @@
     <string name="seal_progress">Geçen süre: %1$d%%</string>
     <string name="title_hint">Başlık (örn. Mezuniyete)</string>
     <string name="message_hint">Geleceğe yazacağın not…</string>
+    <string name="message_locked">Not, mühür kırıldıktan sonra düzenlenebilir. Mühür vakti gelene kadar gizli kalır.</string>
     <string name="emoji_label">Sembole seç</string>
     <string name="color_label">Renk seç</string>
 

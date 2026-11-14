@@ -20,8 +20,10 @@ notunu okursun.
   - Hazır süreler: 1 saat / 1 gün / 1 hafta / 1 ay
   - **Özel süre**: miktar + birim (dakika / saat / gün) — örn. "45 dakika", "6 gün"
   - Takvimden tarih seçimi (DatePicker)
-- **Kapsülü düzenleme** — başlık, not, sembol, renk ve (mühürlüyken) süre
-  değiştirilebilir; süre alanına dokunulmadıysa vakt aynen korunur
+- **Kapsülü düzenleme** — başlık, sembol, renk ve (mühürlüyken) süre
+  değiştirilebilir; **mühürlüyken not alanı gizlenir** ve yalnızca mühür
+  kırıldıktan sonra düzenlenebilir. Süre alanına dokunulmadıysa vakt aynen
+  korunur
 - **Sembol ve renk** — 12 emoji, 6 Expressive konteyner rengi
 - **Filtreler** — Tümü / Mühürlü / Açıldı (ButtonGroup)
 - **İstatistik rozetleri** — başlıkta mühürlü / açılmış kapsül sayısı
