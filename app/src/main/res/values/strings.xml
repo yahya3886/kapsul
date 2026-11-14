@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kapsül</string>
+    <string name="tagline">Geleceğe mühürlü notlar</string>
+
+    <string name="nav_all">Kapsüller</string>
+    <string name="nav_about">Hakkında</string>
+
+    <string name="filter_all">Tümü</string>
+    <string name="filter_sealed">Mühürlü</string>
+    <string name="filter_opened">Açıldı</string>
+
+    <string name="new_capsule">Yeni kapsül</string>
+    <string name="title_hint">Başlık (örn. Mezuniyete)</string>
+    <string name="message_hint">Geleceğe yazacağın not…</string>
+    <string name="emoji_label">Sembole seç</string>
+    <string name="color_label">Renk seç</string>
+
+    <string name="unlock_label">Ne zaman açılsın?</string>
+    <string name="unlock_1h">1 saat</string>
+    <string name="unlock_1d">1 gün</string>
+    <string name="unlock_1w">1 hafta</string>
+    <string name="unlock_1m">1 ay</string>
+    <string name="unlock_pick">Tarih seç</string>
+    <string name="pick_date">Açılma tarihi</string>
+    <string name="confirm">Mühütle</string>
+    <string name="ok">Tamam</string>
+    <string name="cancel">Vazgeç</string>
+    <string name="save">Kaydet</string>
+    <string name="delete">Sil</string>
+    <string name="delete_warning">Bu kapsül kalıcı olarak silinecek. Geri alınamaz.</string>
+
+    <string name="sealed_until">Şu tarihte açılacak: %1$s</string>
+    <string name="remaining">Kalan süre</string>
+    <string name="time_up">Süre doldu!</string>
+    <string name="break_seal">Mührü kır</string>
+    <string name="breaking">Mühür kırılıyor…</string>
+    <string name="opened_at">Açılma: %1$s</string>
+    <string name="created_at">Mühürlenme: %1$s</string>
+    <string name="early_warning">Bu kapsül henüz vakti gelmeden açılıyor. Emin misin? Geri alınamaz.</string>
+    <string name="early_open">Erken aç</string>
+
+    <string name="empty_title">Raflar boş</string>
+    <string name="empty_body">Geleceğe ilk mühürlü notunu yaz — zamanı gelince burada seni bekleyecek.</string>
+
+    <string name="about_body">Kapsül, yalnızca senin cihazında yaşayan bir zaman kapsülüdür. Notların hiçbir sunucuya gitmez; mühür vakti gelene kadar açılmaz.</string>
+    <string name="about_count">Raftaki kapsül sayısı: %1$d</string>
+
+    <string name="error_generic">Bir şeyler ters gitti</string>
+    <string name="retry">Tekrar dene</string>
+
+    <string name="demo_title">İlk kapsülün</string>
+    <string name="demo_message">Merhaba! Bu kapsül, uygulamayı tanısın diye 3 dakika sonra açılacak üzere mühürlendi. Açılma anını izle — sonra kendi notunu yazabilirsin.</string>
+</resources>
