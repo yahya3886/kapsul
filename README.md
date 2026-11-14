@@ -57,4 +57,4 @@ kendisi analiz, izleme veya reklam yazılımı içermez.
 
 ## Lisans
 
-Proje kişisel amaçlıdır; dağıtım ve değişiklik için depo sahibine danışın.
+[MIT](LICENSE) — özgürce kullanabilir, değiştirebilir ve dağıtabilirsin.
