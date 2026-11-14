@@ -23,13 +23,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -46,24 +51,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kapsul.app.R
 import com.kapsul.app.data.Capsule
 import com.kapsul.app.ui.components.capsuleContainer
+import com.kapsul.app.util.formatDateTime
 
 private val EMOJIS = listOf(
     "💌", "🎁", "⏳", "🌱", "📝", "🎉",
     "🗝️", "📸", "🎯", "🌙", "☀️", "🍀",
 )
 
-private data class Preset(val label: String, val duration: Long?)
+private enum class PresetKind { DURATION, CUSTOM, DATE }
+
+private data class Preset(val label: String, val kind: PresetKind, val duration: Long = 0L)
 
 private const val HOUR = 60 * 60 * 1000L
 private const val DAY = 24 * HOUR
 
+private const val UNIT_MINUTE = 0
+private const val UNIT_HOUR = 1
+private const val UNIT_DAY = 2
+
 /**
  * Yeni kapsül yazma diyalogu: başlık, not, sembol, renk ve açılma vakti.
+ *
+ * Açılma vakti üç yoldan seçilebilir: hazır süre (1 saat…1 ay), özel süre
+ * (miktar + dakika/saat/gün birimi) ya da takvimden tarih.
  * "Mühütle" onaylandığında [Capsule] üretilir.
  */
 @Composable
@@ -80,13 +96,48 @@ fun NewCapsuleDialog(
     var customDate by remember { mutableStateOf<Long?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
 
+    // Özel süre: miktar (yalnızca rakam) + birim (dakika/saat/gün).
+    var customAmount by remember { mutableStateOf("") }
+    var unitIndex by remember { mutableIntStateOf(UNIT_HOUR) }
+
+    val label1h = stringResource(R.string.unlock_1h)
+    val label1d = stringResource(R.string.unlock_1d)
+    val label1w = stringResource(R.string.unlock_1w)
+    val label1m = stringResource(R.string.unlock_1m)
+    val labelCustom = stringResource(R.string.custom_duration)
+    val labelPick = stringResource(R.string.unlock_pick)
     val presets = listOf(
-        Preset(stringResource(R.string.unlock_1h), HOUR),
-        Preset(stringResource(R.string.unlock_1d), DAY),
-        Preset(stringResource(R.string.unlock_1w), 7 * DAY),
-        Preset(stringResource(R.string.unlock_1m), 30 * DAY),
-        Preset(stringResource(R.string.unlock_pick), null),
+        Preset(label1h, PresetKind.DURATION, HOUR),
+        Preset(label1d, PresetKind.DURATION, DAY),
+        Preset(label1w, PresetKind.DURATION, 7 * DAY),
+        Preset(label1m, PresetKind.DURATION, 30 * DAY),
+        Preset(labelCustom, PresetKind.CUSTOM),
+        Preset(labelPick, PresetKind.DATE),
     )
+    val selected = presets[presetIndex]
+
+    // Birim etiketleri ButtonGroup içerik lambda'sı composable olmadığı için dışta çözülür.
+    val unitMinutes = stringResource(R.string.unit_minutes)
+    val unitHours = stringResource(R.string.unit_hours)
+    val unitDays = stringResource(R.string.unit_days)
+
+    val amount = customAmount.toIntOrNull() ?: 0
+    val customValid = amount in 1..999_999
+    val unitMillis = when (unitIndex) {
+        UNIT_MINUTE -> 60_000L
+        UNIT_HOUR -> HOUR
+        else -> DAY
+    }
+
+    val now = System.currentTimeMillis()
+    val unlockAt: Long? = when (selected.kind) {
+        PresetKind.DURATION -> now + selected.duration
+        PresetKind.CUSTOM -> if (customValid) now + amount * unitMillis else null
+        PresetKind.DATE -> customDate
+    }
+
+    val canCreate =
+        title.isNotBlank() && message.isNotBlank() && unlockAt != null && !saving
 
     AlertDialog(
         onDismissRequest = { if (!saving) onDismiss() },
@@ -177,26 +228,66 @@ fun NewCapsuleDialog(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                ButtonGroup(overflowIndicator = {}) {
+                ButtonGroup(
+                    overflowIndicator = { state ->
+                        IconButton(onClick = { state.show() }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.custom_duration),
+                            )
+                        }
+                    },
+                ) {
                     presets.forEachIndexed { index, preset ->
                         toggleableItem(
-                            checked = if (preset.duration == null) {
-                                customDate != null
-                            } else {
-                                customDate == null && presetIndex == index
-                            },
+                            checked = presetIndex == index,
                             label = preset.label,
                             onCheckedChange = {
                                 presetIndex = index
-                                customDate = null
-                                if (preset.duration == null) showDatePicker = true
+                                when (preset.kind) {
+                                    PresetKind.DATE -> {
+                                        if (customDate == null) showDatePicker = true
+                                    }
+                                    else -> Unit
+                                }
                             },
                         )
                     }
                 }
-                if (customDate != null) {
+
+                // Özel süre: miktar + birim seçimi.
+                if (selected.kind == PresetKind.CUSTOM) {
+                    OutlinedTextField(
+                        value = customAmount,
+                        onValueChange = { input ->
+                            customAmount = input.filter(Char::isDigit).take(6)
+                        },
+                        label = { Text(stringResource(R.string.amount_hint)) },
+                        singleLine = true,
+                        isError = customAmount.isNotEmpty() && !customValid,
+                        supportingText = {
+                            if (customAmount.isNotEmpty() && !customValid) {
+                                Text(stringResource(R.string.invalid_amount))
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    ButtonGroup(overflowIndicator = {}) {
+                        listOf(unitMinutes, unitHours, unitDays).forEachIndexed { index, label ->
+                            toggleableItem(
+                                checked = unitIndex == index,
+                                label = label,
+                                onCheckedChange = { unitIndex = index },
+                            )
+                        }
+                    }
+                }
+
+                // Seçilen vaktin önizlemesi (özel süre veya tarih).
+                if (unlockAt != null && selected.kind != PresetKind.DURATION) {
                     Text(
-                        text = com.kapsul.app.util.formatDateTime(customDate!!),
+                        text = stringResource(R.string.unlock_preview, formatDateTime(unlockAt)),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -205,17 +296,16 @@ fun NewCapsuleDialog(
         },
         confirmButton = {
             TextButton(
-                enabled = title.isNotBlank() && message.isNotBlank() && !saving,
+                enabled = canCreate,
                 onClick = {
-                    val unlockAt = customDate
-                        ?: (System.currentTimeMillis() + (presets[presetIndex].duration ?: DAY))
+                    val target = unlockAt ?: return@TextButton
                     onCreate(
                         Capsule(
                             title = title.trim(),
                             message = message.trim(),
                             emoji = emoji,
                             colorIndex = colorIndex,
-                            unlockAt = unlockAt,
+                            unlockAt = target,
                         ),
                     )
                 },
@@ -239,7 +329,11 @@ fun NewCapsuleDialog(
             initialSelectedDateMillis = customDate ?: (System.currentTimeMillis() + DAY),
         )
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = {
+                showDatePicker = false
+                // Tarih seçilmediyse seçim geri alınır; kullanıcı hazır süreye döner.
+                if (customDate == null) presetIndex = 1
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -251,7 +345,12 @@ fun NewCapsuleDialog(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        if (customDate == null) presetIndex = 1
+                    },
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             },

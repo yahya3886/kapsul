@@ -51,11 +51,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.net.Uri
+import com.kapsul.app.BuildConfig
 import com.kapsul.app.R
 import com.kapsul.app.data.Capsule
 import com.kapsul.app.ui.components.capsuleContainer
@@ -302,8 +306,12 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     }
 }
 
+/** Kaynak kod deposu — Hakkında diyalogundan açılır. */
+private const val GITHUB_URL = "https://github.com/yahya3886/kapsul"
+
 @Composable
 private fun AboutDialog(count: Int, onDismiss: () -> Unit) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.app_name)) },
@@ -319,11 +327,29 @@ private fun AboutDialog(count: Int, onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Text(
+                    text = stringResource(R.string.about_version, BuildConfig.VERSION_NAME),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.ok))
+            Row {
+                TextButton(
+                    onClick = {
+                        runCatching {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_URL)),
+                            )
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.github_open))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.ok))
+                }
             }
         },
     )
