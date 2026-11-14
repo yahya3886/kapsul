@@ -11,6 +11,10 @@
     <string name="filter_opened">Açıldı</string>
 
     <string name="new_capsule">Yeni kapsül</string>
+    <string name="edit_capsule">Kapsülü düzenle</string>
+    <string name="stat_sealed">%1$d mühürlü</string>
+    <string name="stat_opened">%1$d açıldı</string>
+    <string name="seal_progress">Geçen süre: %1$d%%</string>
     <string name="title_hint">Başlık (örn. Mezuniyete)</string>
     <string name="message_hint">Geleceğe yazacağın not…</string>
     <string name="emoji_label">Sembole seç</string>

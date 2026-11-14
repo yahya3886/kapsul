@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
@@ -34,7 +35,8 @@ import kotlin.math.sin
 /**
  * Balmumu mühür görseli.
  *
- * - Kapalıyken: tırtıklı kenarlı balmumu mührü hafifçe sallanır (canlı his).
+ * - Kapalıyken: tırtıklı kenarlı balmumu mührü hafifçe sallanır (canlı his) ve
+ *   etrafındaki halka [progress] oranında dolar — ne kadar beklediğini gösterir.
  * - [breaking] true: mühür büyüyerek soler — kırılma anı.
  * - Açıldıktan sonra: sade renkli daire içinde sembol kalır.
  */
@@ -44,6 +46,7 @@ fun SealVisual(
     breaking: Boolean,
     opened: Boolean,
     modifier: Modifier = Modifier,
+    progress: Float = 0f,
 ) {
     val motion = MaterialTheme.motionScheme
     val colorScheme = MaterialTheme.colorScheme
@@ -80,6 +83,36 @@ fun SealVisual(
         contentAlignment = Alignment.Center,
     ) {
         if (!opened) {
+            // İlerleme halkası: mührün dışını saran, beklenen süreyi dolan halka.
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = waxAlpha },
+            ) {
+                val stroke = 3.dp.toPx()
+                val radius = size.minDimension / 2f - stroke
+                drawCircle(
+                    color = colorScheme.outlineVariant,
+                    radius = radius,
+                    center = center,
+                    style = Stroke(width = stroke),
+                )
+                val fraction = progress.coerceIn(0f, 1f)
+                if (fraction > 0f) {
+                    drawArc(
+                        color = colorScheme.tertiary,
+                        startAngle = -90f,
+                        sweepAngle = 360f * fraction,
+                        useCenter = false,
+                        topLeft = Offset(stroke / 2f, stroke / 2f),
+                        size = androidx.compose.ui.geometry.Size(
+                            size.width - stroke,
+                            size.height - stroke,
+                        ),
+                        style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    )
+                }
+            }
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()

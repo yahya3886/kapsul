@@ -53,6 +53,9 @@ class KapsulViewModel(private val repo: CapsuleRepository) : ViewModel() {
 
     fun open(id: String) = repo.open(id)
 
+    /** Mevcut bir kapsülü günceller (upsert). */
+    fun update(capsule: Capsule) = repo.upsert(capsule)
+
     fun delete(id: String) = repo.remove(id)
 
     companion object {

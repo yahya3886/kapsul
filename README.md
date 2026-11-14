@@ -11,15 +11,20 @@ notunu okursun.
 
 ## Özellikler
 
-- **Mühürlü kapsüller** — geri sayım listede canlı işler, kartlar sıralanır
+- **Mühürlü kapsüller** — geri sayım listede canlı işler, kartlar sıralanır;
+  mühür etiketini saran **ilerleme halkası** beklenen süreyi dolmaya başlar
 - **Mühür kırma animasyonu** — balmumu mührü titrer, kırılınca büyüyerek soler;
-  içerik yay (spatial spring) ile açılır
+  içerik yay (spatial spring) ile açılır. Kırılma anında **titreşim** ve
+  mührün üstünden fışkıran **konfeti kutlaması** vardır
 - **Üç türlü açılma vakti**
   - Hazır süreler: 1 saat / 1 gün / 1 hafta / 1 ay
   - **Özel süre**: miktar + birim (dakika / saat / gün) — örn. "45 dakika", "6 gün"
   - Takvimden tarih seçimi (DatePicker)
+- **Kapsülü düzenleme** — başlık, not, sembol, renk ve (mühürlüyken) süre
+  değiştirilebilir; süre alanına dokunulmadıysa vakt aynen korunur
 - **Sembol ve renk** — 12 emoji, 6 Expressive konteyner rengi
 - **Filtreler** — Tümü / Mühürlü / Açıldı (ButtonGroup)
+- **İstatistik rozetleri** — başlıkta mühürlü / açılmış kapsül sayısı
 - **Hakkında** — uygulama açıklaması, sürüm bilgisi ve GitHub deposunu açan buton
 - **%100 çevrimdışı** — veriler `capsules.json` dosyasında saklanır; hiçbir veri
   cihazdan çıkmaz, hesap gerekmez, reklam yoktur

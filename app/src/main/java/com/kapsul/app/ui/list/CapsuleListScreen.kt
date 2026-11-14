@@ -5,6 +5,13 @@
 
 package com.kapsul.app.ui.list
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -51,6 +59,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -139,6 +153,23 @@ fun CapsuleListScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatPill(
+                        icon = Icons.Filled.Lock,
+                        text = stringResource(
+                            R.string.stat_sealed,
+                            total.count { it.isSealed },
+                        ),
+                    )
+                    StatPill(
+                        icon = Icons.Filled.LockOpen,
+                        text = stringResource(
+                            R.string.stat_opened,
+                            total.count { !it.isSealed },
+                        ),
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -237,14 +268,50 @@ private fun CapsuleCard(
                 .padding(14.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
+            // Mühür etiketinin etrafındaki halka: açılana kadar dolmaya devam eder.
+            val fraction = if (capsule.isSealed && capsule.unlockAt > capsule.createdAt) {
+                ((now - capsule.createdAt).toFloat() /
+                    (capsule.unlockAt - capsule.createdAt)).coerceIn(0f, 1f)
+            } else {
+                1f
+            }
+            val trackColor = MaterialTheme.colorScheme.outlineVariant
+            val progressColor = MaterialTheme.colorScheme.tertiary
+
             Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(stampBackground),
+                modifier = Modifier.size(50.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = capsule.emoji, fontSize = 22.sp)
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val stroke = 3.dp.toPx()
+                    val radius = size.minDimension / 2f - stroke
+                    drawCircle(
+                        color = trackColor,
+                        radius = radius,
+                        center = center,
+                        style = Stroke(width = stroke),
+                    )
+                    if (fraction > 0f) {
+                        drawArc(
+                            color = progressColor,
+                            startAngle = -90f,
+                            sweepAngle = 360f * fraction,
+                            useCenter = false,
+                            topLeft = Offset(stroke / 2f, stroke / 2f),
+                            size = Size(size.width - stroke, size.height - stroke),
+                            style = Stroke(width = stroke, cap = StrokeCap.Round),
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(stampBackground),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text = capsule.emoji, fontSize = 20.sp)
+                }
             }
 
             Column {
@@ -282,6 +349,18 @@ private fun CapsuleCard(
 
 @Composable
 private fun EmptyState(modifier: Modifier = Modifier) {
+    // Boş durum: zarf yumuşakça "nefes alır".
+    val infinite = rememberInfiniteTransition(label = "emptyPulse")
+    val pulse by infinite.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.12f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "emptyPulseScale",
+    )
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -289,7 +368,14 @@ private fun EmptyState(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(text = "📭", fontSize = 56.sp)
+        Text(
+            text = "📭",
+            fontSize = 56.sp,
+            modifier = Modifier.graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+            },
+        )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.empty_title),
@@ -308,6 +394,30 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 
 /** Kaynak kod deposu — Hakkında diyalogundan açılır. */
 private const val GITHUB_URL = "https://github.com/yahya3886/kapsul"
+
+@Composable
+private fun StatPill(icon: ImageVector, text: String) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
 
 @Composable
 private fun AboutDialog(count: Int, onDismiss: () -> Unit) {
